@@ -1035,6 +1035,19 @@ at once when a new tile set is available, while higher values process more tiles
 immediately so data can be downloaded and displayed sooner.
 
 
+### .cancelUnusedDownloads
+
+```js
+cancelUnusedDownloads: boolean = false
+```
+
+When `true`, tile downloads that are already in progress are canceled if the tile is no
+longer used by the latest traversal, freeing up download slots for the tiles that are
+needed more quickly when the camera is moving. Tiles that are only queued are always
+removed when unused. Canceled tiles must be downloaded from the start again if they are
+needed later, which may increase bandwidth usage.
+
+
 ### .constructor
 
 ```js

@@ -619,6 +619,17 @@ export class TilesRendererBase {
 		 */
 		this.maxTilesProcessed = 250;
 
+		/**
+		 * When `true`, tile downloads that are already in progress are canceled if the tile is no
+		 * longer used by the latest traversal, freeing up download slots for the tiles that are
+		 * needed more quickly when the camera is moving. Tiles that are only queued are always
+		 * removed when unused. Canceled tiles must be downloaded from the start again if they are
+		 * needed later, which may increase bandwidth usage.
+		 * @type {boolean}
+		 * @default false
+		 */
+		this.cancelUnusedDownloads = false;
+
 	}
 
 	// Plugins
@@ -1339,15 +1350,23 @@ export class TilesRendererBase {
 
 	removeUnusedPendingTiles() {
 
-		const { lruCache, loadingTiles } = this;
+		const { lruCache, loadingTiles, cancelUnusedDownloads } = this;
 
 		// cannot delete items while iterating over a set
 		const toRemove = [];
 		for ( const tile of loadingTiles ) {
 
-			// we only remove tiles that are QUEUED to avoid cancelling tiles that may already be nearly downloaded
-			// as the camera moves
-			if ( ! lruCache.isUsed( tile ) && tile.internal.loadingState === QUEUED ) {
+			if ( lruCache.isUsed( tile ) ) {
+
+				continue;
+
+			}
+
+			// by default we only remove tiles that are QUEUED to avoid cancelling tiles that may already be nearly
+			// downloaded as the camera moves. Tiles that are already PARSING are never removed since the data has
+			// already been downloaded.
+			const { loadingState } = tile.internal;
+			if ( loadingState === QUEUED || cancelUnusedDownloads && loadingState === LOADING ) {
 
 				toRemove.push( tile );
 

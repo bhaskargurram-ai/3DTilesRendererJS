@@ -40,6 +40,7 @@ export class TilesRendererBase<TEventMap extends TilesRendererBaseEventMap = Til
 	loadSiblings : boolean;
 	loadAncestors : boolean;
 	maxTilesProcessed : number;
+	cancelUnusedDownloads : boolean;
 
 	readonly loadProgress : number;
 
